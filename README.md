@@ -54,6 +54,7 @@ GET /expand?shortUrl=http%3A%2F%2Fyourshortener.com%2FaN8gR
   "status_code": 200,
   "status_txt": "OK"
 }
+```
 
 
 ### /shorten

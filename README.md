@@ -7,13 +7,16 @@ URL Shortener based on Python, Tornado, Redis
 
 Installation
 ------------
+```
+pip install tornado redis
+```
 
 
 
 API
 ---
 Currently there is no support for authentication. Though there is a configurable
-limit on API calls.
+limit on API calls. All API endpoints return JSON.
 
 
 ### /expand
@@ -48,6 +51,7 @@ GET /expand?shortUrl=http%3A%2F%2Fyourshortener.com%2FaN8gR
       {
         "long_url": "http://yourdomain.com/yourcategorie/2014-04-02/yourtitle/",
         "short_url": "http://yourshortener.com/aN8gR",
+        "hash": "aN8gR",
       }
     ]
   },
@@ -81,7 +85,7 @@ parameters without first encoding it.
 #### Example Request
 ```
 API Address: https://yourshortener.com/
-GET /shorten&longUrl=http%3A%2F%2Fyourdomain.com%2Fyourcategorie%2F2014-04-02%2Fyourtitle%2F
+GET /shorten?longUrl=http%3A%2F%2Fyourdomain.com%2Fyourcategorie%2F2014-04-02%2Fyourtitle%2F
 ```
 
 #### Example Response

@@ -10,18 +10,17 @@ API
 ---
 
 ### /expand
-Given a shortened URL or hash, returns the target (long) URL.
+Given a shortened URL or hash, returns the target (long) URL.  
 
-#### Authentication
-None
+Authentication: None
 
 #### Parameters
  - shortUrl - refers to one shortened link. e.g.: http://yourshortener.com/aN8gR.
  - hash - refers to one URL hash. e.g.: aN8gR.
 
-**Note**
- - Either `shortUrl` or `hash` must be given as a parameter.
- - You can only provide one  `shortUrl` or `hash`.
+**Note**:
+Either `shortUrl` or `hash` must be given as a parameter.
+You can only provide one  `shortUrl` or `hash`.
 
 
 #### Return Values

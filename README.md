@@ -40,6 +40,11 @@ By default all URLs and hashes will live forever. If you want you can set a TTL
 (time to live) for all URLs as the parameter `ttl`. Note that this will only
 effect new URLs/hashes.
 
+### Advanced Setup
+In a real-world scenario you would want to run multiple application process behind a load
+balancer like [nginx](http://nginx.org/). You can find an nginx configuration in *conf/nginx.conf*
+as well as a supervisor configuration in *conf/supervisord.conf*.
+
 
 API
 ---

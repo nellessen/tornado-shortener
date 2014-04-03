@@ -38,7 +38,8 @@ class Application(tornado.web.Application):
     settings, initializes a tornado Application instance and establishes
     db connections.
     """
-    def __init__(self, default_domain, hash_salt, redis_namespace, redis_host, redis_port, redis_db, ttl):
+    def __init__(self, default_domain='localhost', hash_salt='', redis_namespace='SHORT:', redis_host='localhost',
+                 redis_port=6379, redis_db=0, ttl=0):
         # Define routes.
         handlers = [
             (r"/expand/$", ExpandHandler),

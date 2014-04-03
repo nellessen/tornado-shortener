@@ -8,7 +8,7 @@ URL Shortener based on Python, Tornado, Redis
 Installation
 ------------
 ```
-apt-get install edis-server
+apt-get install redis-server
 pip install tornado redis hashids
 git clone https://github.com/nellessen/tornado-shortener.git
 ```
@@ -16,7 +16,7 @@ git clone https://github.com/nellessen/tornado-shortener.git
 
 Quick Start
 -----------
-To run a webserver on a given port with a default domain localhost configured for
+To run a webserver on a given port with a default domain *localhost* used for
 short URLs run the following command:
 ```
 cd tornado-shortener
@@ -30,7 +30,7 @@ for redis under which all keys will be stored using the parameter `redis_namespa
 ### Hash Salt
 For every URL shortened by this application a uniquie hash is generated. This hash
 is  based on the the current day and an incrementing index for the current day.
-Both parameters are hashed using [hashids](http://www.hashids.org/). Note that
+These two values are used to generate the final hash using [hashids](http://www.hashids.org/). Note that
 collisions are prevented even if you run this application in multiple processes
 because the the index used is stored and incremented in Redis. If you want the
 hashes to be more obscure you can provide a salt as the parameter `salt`.

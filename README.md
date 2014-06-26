@@ -48,7 +48,7 @@ This makes especially sense if you want to hide your redis credentials from
 the process list. The following table show the command-line parameters available
 and the corresponding environment variables:
 
-### Command-line Argument | Environment Variables | Default | Description
+Command-line Argument | Environment Variables | Default | Description
 --- | --- | --- | ---
 port | PORT | 8888 | Defines the port the server is listening on.
 domain | DOMAIN | localhost:8888 | Defines the domain under which this application is available. Shorted URLs will point to this domain by default.

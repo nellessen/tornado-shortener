@@ -49,7 +49,7 @@ the process list. The following table show the command-line parameters available
 and the corresponding environment variables:
 
 ### Command-line Argument | Environment Variables | Default | Description
---- | --- | ---
+--- | --- | --- | ---
 port | PORT | 8888 | Defines the port the server is listening on.
 domain | DOMAIN | localhost:8888 | Defines the domain under which this application is available. Shorted URLs will point to this domain by default.
 localhostonly | LOCALHOSTONLY | False | If True the application listens on localhost only. This makes sense if you setup this application behind a load balancer like nginx.

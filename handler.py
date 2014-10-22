@@ -20,20 +20,76 @@ class BaseHandler(RequestHandler):
     """
     A base class with common methods for all request handlers.
     """
-    def store_url(self, url_hash, long_url):
+    def store_url(self, url_hash, long_url, android_url=None, android_fallback_url=None, ios_url=None, ios_fallback_url=None):
         """
-        Stores a long URL for the given url hash.
+        Stores a long URL for the given url hash. You can specify additional URLS for ios and android devices.
         """
-        k = self.settings['redis_namespace'] + 'URLS:' + url_hash
-        self.application.redis.set(k, long_url)
+        ttl = int(time.time()) + self.settings['ttl'] * 24 * 60 * 60
+        key_prefix = self.settings['redis_namespace'] + 'URLS:' + url_hash
+        pipe = self.application.redis.pipeline()
+
+        k = key_prefix + ''
+        pipe.set(k, long_url)
         if self.settings['ttl']:
-            self.application.redis.expireat(k, int(time.time()) + self.settings['ttl'] * 24 * 60 * 60)
+            pipe.expireat(k, ttl)
+
+        if android_url:
+            k = key_prefix + ':android_url'
+            pipe.set(k, android_url)
+            if self.settings['ttl']:
+                pipe.expireat(k, ttl)
+
+        if android_fallback_url:
+            k = key_prefix + ':android_fallback_url'
+            pipe.set(k, android_fallback_url)
+            if self.settings['ttl']:
+                pipe.expireat(k, ttl)
+
+        if ios_url:
+            k = key_prefix + ':ios_url'
+            pipe.set(k, ios_url)
+            if self.settings['ttl']:
+                pipe.expireat(k, ttl)
+
+        if ios_fallback_url:
+            k = key_prefix + ':ios_fallback_url'
+            pipe.set(k, ios_fallback_url)
+            if self.settings['ttl']:
+                pipe.expireat(k, ttl)
+
+        pipe.execute()
+
 
     def load_url(self, url_hash):
         """
         Loads the long URL for the given URL hash.
         """
         return self.application.redis.get(self.settings['redis_namespace'] + 'URLS:' + url_hash)
+
+
+    def load_urls(self, url_hash):
+        """
+        Loads the long URL for the given URL hash as well as the alternative URLs for ios and android devices.
+
+        @returns: Returns the URLs as a tuple (long_url, android_url, android_fallback_url, ios_url, ios_fallback_url)
+        """
+        key_prefix = self.settings['redis_namespace'] + 'URLS:' + url_hash
+        pipe = self.application.redis.pipeline()
+
+        k = key_prefix + ''
+        pipe.get(k)
+        k = key_prefix + ':android_url'
+        pipe.get(k)
+        k = key_prefix + ':android_fallback_url'
+        pipe.get(k)
+        k = key_prefix + ':ios_url'
+        pipe.get(k)
+        k = key_prefix + ':ios_fallback_url'
+        pipe.get(k)
+
+        result = pipe.execute()
+
+        return (result[0], result[1], result[2], result[3], result[4])
 
 
 
@@ -46,11 +102,37 @@ class RedirectHandler(BaseHandler):
         """
         Redirects a short URL based on the given url hash.
         """
-        long_url = self.load_url(str(url_hash))
+        long_url, android_url, android_fallback_url, ios_url, ios_fallback_url = self.load_urls(str(url_hash))
+
         if not long_url:
             raise HTTPError(404)
         else:
-            self.redirect(long_url, permanent=True)
+            user_agent = self.request.headers.get('User-Agent', '')
+            if android_url and 'Android' in user_agent:
+                logging.debug('Redirect Android device')
+                self.redirect_android(android_url, android_fallback_url)
+                return
+            elif ios_url and ('iPhone' in user_agent or 'iPad' in user_agent):
+                logging.debug('Redirect iOS device')
+                self.redirect_ios(ios_url, ios_fallback_url)
+                return
+            else:
+                logging.debug('Default redirect')
+                self.redirect(long_url, permanent=True)
+
+
+    def redirect_android(self, url, url_fallback=None):
+        if url_fallback:
+            self.render('redirect.android.fallback.html', url=url, url_fallback=url_fallback)
+        else:
+            self.render('redirect.android.html', url=url, url_fallback=url_fallback)
+
+
+    def redirect_ios(self, url, url_fallback=None):
+        if url_fallback:
+            self.render('redirect.ios.fallback.html', url=url, url_fallback=url_fallback)
+        else:
+            self.render('redirect.ios.html', url=url, url_fallback=url_fallback)
 
 
 
@@ -80,14 +162,15 @@ class ExpandHandler(BaseHandler):
                 return self.finish({'status_code': 500, 'status_txt': 'ARGS_DONT_MATCH', 'data': []})
             else: url_hash = url_hash_from_url
 
-        long_url = self.load_url(url_hash)
+        long_url, android_url, android_fallback_url, ios_url, ios_fallback_url = self.load_urls(url_hash)
         if not long_url:
             return self.finish({'status_code': 200, 'status_txt': 'OK', 'data': {'expand': [
                 {'error': 'NOT_FOUND', 'hash': url_hash}
             ]}})
         else:
             return self.finish({'status_code': 200, 'status_txt': 'OK', 'data': {'expand': [
-                {'long_url': long_url, 'hash': url_hash, 'short_url': short_url}
+                {'long_url': long_url, 'android_url': android_url, 'android_fallback_url': android_fallback_url,
+                 'ios_url': ios_url, 'ios_fallback_url': ios_fallback_url, 'hash': url_hash, 'short_url': short_url}
             ]}})
 
 
@@ -101,12 +184,32 @@ class ShortHandler(BaseHandler):
         Given a long URL, returns a short URL.
         """
         long_url = self.get_argument('longUrl', None) # Is decoded by Tornado.
+        android_url = self.get_argument('androidUrl', None) # Is decoded by Tornado.
+        android_fallback_url = self.get_argument('androidFallbackUrl', None) # Is decoded by Tornado.
+        ios_url = self.get_argument('iosUrl', None) # Is decoded by Tornado.
+        ios_fallback_url = self.get_argument('iosFallbackUrl', None) # Is decoded by Tornado.
         domain = self.get_argument('domain', self.settings['default_domain'])
 
         # Normalize and validate long_url.
         try:
             long_url = utils.normalize_url(long_url)
             assert utils.validate_url(long_url) == True
+            if android_url:
+                # TODO: Validate and normalize!
+                pass
+                #android_url = utils.normalize_url(android_url)
+                #assert utils.validate_url(android_url) == True
+            if android_fallback_url:
+                android_fallback_url = utils.normalize_url(android_fallback_url)
+                assert utils.validate_url(android_fallback_url) == True
+            if ios_url:
+                # TODO: Validate and normalize!
+                pass
+                #ios_url = utils.normalize_url(ios_url)
+                #assert utils.validate_url(ios_url) == True
+            if ios_fallback_url:
+                ios_fallback_url = utils.normalize_url(ios_fallback_url)
+                assert utils.validate_url(ios_fallback_url) == True
         except:
             logging.info('Wrong URL', exc_info=1)
             return self.finish({'status_code': 500, 'status_txt': 'INVALID_URI', 'data': []})
@@ -120,8 +223,10 @@ class ShortHandler(BaseHandler):
                                        self.settings['redis_namespace'],
                                        self.settings['hash_salt'])
         short_url = 'http://' + domain + '/' + url_hash
-        self.store_url(url_hash, long_url)
+        self.store_url(url_hash, long_url, android_url, android_fallback_url, ios_url, ios_fallback_url)
 
         # Return success response.
-        data = {'long_url': long_url, 'url': short_url, 'hash': url_hash, 'global_hash': url_hash}
+        data = {'long_url': long_url, 'android_url': android_url, 'android_fallback_url': android_fallback_url,
+                'ios_url': ios_url, 'ios_fallback_url': ios_fallback_url,  'url': short_url, 'hash': url_hash,
+                'global_hash': url_hash}
         self.finish({'status_code': 200, 'status_txt': 'OK', 'data': data})

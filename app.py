@@ -79,6 +79,7 @@ class Application(tornado.web.Application):
             hash_salt=hash_salt,
             redis_namespace=redis_namespace,
             ttl=ttl,
+            template_path = os.path.join(os.path.dirname(__file__), "templates"),
         )
 
         # Call super constructor to initiate a Tornado Application.

@@ -55,6 +55,13 @@ balancer like [nginx](http://nginx.org/). You can find an nginx configuration in
 as well as a supervisor configuration in *conf/supervisord.conf*.
 
 
+### Alternative URLs for iOS and Android Devices
+The shortener support alternative URLs for iOS and Android devices. This way you can redirect
+your mobile customers to specific pages. You can even start the app if you have registered an
+URL Scheme. If you want to use that you can event provide a fallback URL which should than point
+to the AppStore and PlayStore respectively.
+
+
 API
 ---
 Currently there is no support for authentication. Though there is a configurable
@@ -78,6 +85,10 @@ You can only provide one  `shortUrl` or `hash`.
 - hash - an echo back of the hash request parameter.
 - error - indicates there was an error retrieving data for a given shortUrl or hash. An example error is "NOT_FOUND".
 - long_url - the URL that the requested short_url or hash points to.
+- android_url - the Android URL that the requested short_url or hash points to.
+- android_fallback_url - the Android fallback URL that the requested short_url or hash points to.
+- ios_url - the iOS URL that the requested short_url or hash points to.
+- ios_fallback_url - the iOS fallback URL that the requested short_url or hash points to.
 
 #### Example Request
 ```
@@ -92,6 +103,10 @@ GET /expand?shortUrl=http%3A%2F%2Fyourshortener.com%2FaN8gR
     "expand": [
       {
         "long_url": "http://yourdomain.com/yourcategorie/2014-04-02/yourtitle/",
+        "android_url": "familonet://",
+        "android_fallback_url": "https://play.google.com/store/apps/details?id=net.familo.android",
+        "ios_url": "familonet://",
+        "ios_fallback_url": "https://itunes.apple.com/de/app/familonet-die-familien-app/id638696816",
         "short_url": "http://yourshortener.com/aN8gR",
         "hash": "aN8gR",
       }
@@ -108,6 +123,10 @@ Given a long URL, returns a short URL.
 
 #### Parameters
  - longUrl - a long URL to be shortened (example: http://yourdomain.com/yourcategorie/2014-04-02/yourtitle/).
+ - androidUrl - an alternative for redirect for longUrl for Android devices (example: App start).
+ - androidFallbackUrl - a fallback for android_url (example: Redirect to Play Store).
+ - iosUrl - an alternative for redirect for longUrl for iOS devices (example: App start).
+ - iosFallbackUrl - a fallback for android_url (example: Redirect to AppStore).
  - domain - (optional) the short domain to use; this can be a custom short domain. The default for this parameter
    can be configured. Passing a specific domain via this parameter will override the default settings.
 
@@ -118,11 +137,17 @@ parameters without first encoding it.
 
 #### Return Values
 - url - the shortened URL.
-- hash - an identifier for long_url which is unique.
+- hash - an identifier which is unique.
 - global_hash - the same as hash (might change when authentication is implemented)
-- long_url - an echo back of the longUrl request parameter. This may not always be equal to the URL requested, as some
-  URL normalization may occur (e.g., due to encoding differences, or case differences in the domain). This long_url
-  will always be functionally identical the the request parameter.
+- long_url - an echo back of the longUrl request parameter.
+- android_url - an echo back of the androidUrl request parameter.
+- android_fallback_url - an echo back of the androidFallbackUrl request parameter.
+- ios_url - an echo back of the iosUrl request parameter.
+- ios_fallback_url - an echo back of the iosFallbackUrl request parameter.
+
+Note that the echo back URLs  may not always be equal to the URL requested, as some
+URL normalization may occur (e.g., due to encoding differences, or case differences in the domain).
+It will always be functionally identical the the request parameter.
 
 #### Example Request
 ```
@@ -137,6 +162,10 @@ GET /shorten?longUrl=http%3A%2F%2Fyourdomain.com%2Fyourcategorie%2F2014-04-02%2F
     "global_hash": "aN8gR",
     "hash": "aN8gR",
     "long_url": "http://yourdomain.com/yourcategorie/2014-04-02/yourtitle/",
+    "android_url": null,
+    "android_fallback_url": null,
+    "ios_url": null,
+    "ios_fallback_url": null,
     "url": "http://yourshortener.com/aN8gR"
   },
   "status_code": 200,

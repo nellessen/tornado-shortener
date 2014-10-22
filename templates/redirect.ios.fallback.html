@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <script>
+            // Redirect secondary URL with delay.
+			setTimeout(function() {
+				if (!document.webkitHidden) {
+					// Redirect to the App Store
+					trackAppstoreRedirect();
+				  	window.location.replace("{% raw url_fallback %}");
+				  }
+			}, 25);
+			// Redirect primary URL.
+			window.location = "{% raw url %}";
+    </script>
+</head>
+<body>
+</body>
+</html>

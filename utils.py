@@ -12,6 +12,7 @@ import re
 import urllib
 import urlparse
 import time
+
 from hashids import Hashids
 
 
@@ -41,7 +42,7 @@ def normalize_url(url, charset='utf-8'):
     function can fix some of the problems in a similar way browsers
     handle data entered by the user:
 
-    >>> url_fix(u'http://de.wikipedia.org/wiki/Elf (Begriffsklärung)')
+    >>> normalize_url(u'http://de.wikipedia.org/wiki/Elf (Begriffsklärung)')
     'http://de.wikipedia.org/wiki/Elf%20%28Begriffskl%C3%A4rung%29'
 
     :param charset: The target charset for the URL if the url was
@@ -50,11 +51,8 @@ def normalize_url(url, charset='utf-8'):
     :see: http://stackoverflow.com/questions/120951/how-can-i-normalize-a-url-in-python
     """
     if isinstance(url, unicode):
-        s = url.encode(charset, 'ignore')
-    scheme, netloc, path, qs, anchor = urlparse.urlsplit(s)
-    path = urllib.quote(path, '/%')
-    qs = urllib.quote_plus(qs, ':&=')
-    return urlparse.urlunsplit((scheme, netloc, path, qs, anchor))
+        url = url.encode(charset, 'ignore')
+    return urllib.quote(url, safe="%/:=&?~#+!$,;'@()*[]")
 
 
 def generate_hash(redis_connection, redis_namespace=':short', hash_salt=''):

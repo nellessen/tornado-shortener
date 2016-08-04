@@ -9,8 +9,7 @@ Installation
 ------------
 ```
 apt-get install redis-server
-pip install tornado redis hashids
-git clone https://github.com/nellessen/tornado-shortener.git
+pip install tornadoshortener  # preferably in a virtualenv
 ```
 
 
@@ -19,8 +18,7 @@ Quick Start
 To run a webserver on a given port with a default domain *localhost* used for
 short URLs run the following command:
 ```
-cd tornado-shortener
-python app.py --port=80 --domain=localhost
+tornadoshortener --port=80 --domain=localhost
 ```
 This assumes you have redis listen on the standard port on localhost.
 You can change your redis database connection settings with the parameters

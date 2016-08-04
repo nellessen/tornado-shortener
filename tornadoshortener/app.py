@@ -4,35 +4,47 @@
 # Description: The main application file. Run this to start the URL shortener webserver.
 # Author       David Nellessen <david.nellessen@familo.net>
 # Date:        4/2/14
-# Note:        
-#==============================================================================
+# Note:
+# =============================================================================
 
 # Import modules
 import logging
-import tornado, tornado.options, tornado.ioloop
+import tornado
+import tornado.options
+import tornado.ioloop
 from handler import RedirectHandler, ExpandHandler, ShortHandler
 import redis
 import os
 
 
 # Define command line parameters.
-tornado.options.define("port", type=int, default=int(os.environ.get('PORT', 8888)), help="Listen on this port")
-tornado.options.define("domain", type=str, default=str(os.environ.get('DOMAIN', "localhost:8888")),
-                       help="The default domain for shortening URLs")
-tornado.options.define("localhostonly", type=bool, default=bool(os.environ.get('LOCALHOSTONLY', False)),
-                       help="Listen on localhost only")
-tornado.options.define("salt", type=str, default=str(os.environ.get('SALT', "")),
-                       help="A string influencing the generated hashes")
-tornado.options.define("redis_host", type=str, default=str(os.environ.get("REDIS_HOST", "localhost")),
-                       help="The redis host")
-tornado.options.define("redis_port", type=int, default=int(os.environ.get("REDIS_PORT", 6379)), help="The redis port")
-tornado.options.define("redis_db", type=int, default=int(os.environ.get("REDIS_DB", 0)), help="The redis db")
-tornado.options.define("redis_namespace", type=str, default=str(os.environ.get("REDIS_NAMESPACE", "SHORT:")),
-                       help="The redis namespace used for all keys")
-tornado.options.define("redis_password", type=str, default=str(os.environ.get("REDIS_PASSWORD", "")),
-                       help="The redis password")
-tornado.options.define("ttl", type=int, default=int(os.environ.get("TTL", 0)),
-                       help="The time to live in days of each link, 0 means forever")
+tornado.options.define(
+    "port", type=int, default=int(os.environ.get('PORT', 8888)), help="Listen on this port")
+tornado.options.define(
+    "domain", type=str, default=str(os.environ.get('DOMAIN', "localhost:8888")),
+    help="The default domain for shortening URLs")
+tornado.options.define(
+    "localhostonly", type=bool, default=bool(os.environ.get('LOCALHOSTONLY', False)),
+    help="Listen on localhost only")
+tornado.options.define(
+    "salt", type=str, default=str(os.environ.get('SALT', "")),
+    help="A string influencing the generated hashes")
+tornado.options.define(
+    "redis_host", type=str, default=str(os.environ.get("REDIS_HOST", "localhost")),
+    help="The redis host")
+tornado.options.define(
+    "redis_port", type=int, default=int(os.environ.get("REDIS_PORT", 6379)), help="The redis port")
+tornado.options.define(
+    "redis_db", type=int, default=int(os.environ.get("REDIS_DB", 0)), help="The redis db")
+tornado.options.define(
+    "redis_namespace", type=str, default=str(os.environ.get("REDIS_NAMESPACE", "SHORT:")),
+    help="The redis namespace used for all keys")
+tornado.options.define(
+    "redis_password", type=str, default=str(os.environ.get("REDIS_PASSWORD", "")),
+    help="The redis password")
+tornado.options.define(
+    "ttl", type=int, default=int(os.environ.get("TTL", 0)),
+    help="The time to live in days of each link, 0 means forever")
 
 
 # Get logger.
@@ -48,8 +60,8 @@ class Application(tornado.web.Application):
     db connections.
     """
 
-    def __init__(self, default_domain='localhost', hash_salt='', redis_namespace='SHORT:', redis_host='localhost',
-                 redis_port=6379, redis_db=0, redis_password=None, ttl=0):
+    def __init__(self, default_domain='localhost', hash_salt='', redis_namespace='SHORT:',
+                 redis_host='localhost', redis_port=6379, redis_db=0, redis_password=None, ttl=0):
         if not redis_password:
             redis_password = None
             using_redis_password = 'NO'
@@ -57,10 +69,11 @@ class Application(tornado.web.Application):
             using_redis_password = 'YES'
 
         logging.info(
-            'Starting application with the following parameters: default_domain: {}, hash_salt: {}, '
-            'redis_namespace: {}, redis_host: {}, redis_port: {}, redis_db: {}, redis_password: {}, ttl: {}'.format(
-                default_domain, hash_salt, redis_namespace, redis_host, redis_port, redis_db, using_redis_password,
-                ttl))
+            'Starting application with the following parameters: default_domain: {},'
+            'hash_salt: {}, redis_namespace: {}, redis_host: {}, redis_port: {},'
+            'redis_db: {}, redis_password: {}, ttl: {}'.format(
+                default_domain, hash_salt, redis_namespace, redis_host, redis_port,
+                redis_db, using_redis_password, ttl))
 
         # Define routes.
         handlers = [
@@ -79,14 +92,15 @@ class Application(tornado.web.Application):
             hash_salt=hash_salt,
             redis_namespace=redis_namespace,
             ttl=ttl,
-            template_path = os.path.join(os.path.dirname(__file__), "templates"),
+            template_path=os.path.join(os.path.dirname(__file__), "templates"),
         )
 
         # Call super constructor to initiate a Tornado Application.
         tornado.web.Application.__init__(self, handlers, **settings)
 
         # Connect to Redis.
-        self.redis = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db, password=redis_password)
+        self.redis = redis.StrictRedis(
+            host=redis_host, port=redis_port, db=redis_db, password=redis_password)
 
 
 def main():

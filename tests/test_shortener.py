@@ -14,7 +14,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 # This test uses coroutine style.
 import json
 from tornado.testing import AsyncHTTPTestCase
-from app import Application
+from tornadoshortener.app import Application
 
 
 class MyHTTPTest(AsyncHTTPTestCase):

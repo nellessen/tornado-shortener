@@ -93,6 +93,11 @@ class BaseHandler(RequestHandler):
         return (result[0], result[1], result[2], result[3], result[4])
 
 
+class IndexHandler(BaseHandler):
+    def get(self):
+        self.finish('Server running')
+
+
 class RedirectHandler(BaseHandler):
     """
     Handles API requests for the / API endpoint.

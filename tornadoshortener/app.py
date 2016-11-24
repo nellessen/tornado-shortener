@@ -12,7 +12,7 @@ import logging
 import tornado
 import tornado.options
 import tornado.ioloop
-from handler import RedirectHandler, ExpandHandler, ShortHandler
+from handler import IndexHandler, RedirectHandler, ExpandHandler, ShortHandler
 import redis
 import os
 
@@ -77,12 +77,13 @@ class Application(tornado.web.Application):
 
         # Define routes.
         handlers = [
-            (r"/expand/$", ExpandHandler),
-            (r"/expand", ExpandHandler),
-            (r"/shorten/$", ShortHandler),
-            (r"/shorten$", ShortHandler),
-            (r"/([a-zA-Z0-9]*)/$", RedirectHandler),
-            (r"/([a-zA-Z0-9]*)$", RedirectHandler),
+            (r'/$', IndexHandler),
+            (r'/expand/$', ExpandHandler),
+            (r'/expand', ExpandHandler),
+            (r'/shorten/$', ShortHandler),
+            (r'/shorten$', ShortHandler),
+            (r'/([a-zA-Z0-9]+)/$', RedirectHandler),
+            (r'/([a-zA-Z0-9]+)$', RedirectHandler),
         ]
 
         # Configure application settings.

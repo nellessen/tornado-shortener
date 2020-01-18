@@ -11,6 +11,15 @@ class BaseHandler(RequestHandler):
     """
     A base class with common methods for all request handlers.
     """
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "Authorization, Credentials, Content-Type")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT')
+
+    def options(self, *args, **kwargs):
+        # no body
+        self.set_status(204)
+        self.finish()
 
     def store_url(self, url_hash, long_url, android_url=None,
                   android_fallback_url=None, ios_url=None, ios_fallback_url=None):

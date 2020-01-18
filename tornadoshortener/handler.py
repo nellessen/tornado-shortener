@@ -1,24 +1,17 @@
-#!/usr/bin/env python
-# coding=UTF-8
-# Title:       handler.py
-# Description: Contains request handler for this application
-# Author       David Nellessen <david.nellessen@familo.net>
-# Date:        4/2/14
-# Note:
-# =============================================================================
-
-# Import modules
 import logging
+
 import time
-from tornado.web import RequestHandler
 from tornado.web import HTTPError
-import utils
+from tornado.web import RequestHandler
+
+from . import utils
 
 
 class BaseHandler(RequestHandler):
     """
     A base class with common methods for all request handlers.
     """
+
     def store_url(self, url_hash, long_url, android_url=None,
                   android_fallback_url=None, ios_url=None, ios_fallback_url=None):
         """
@@ -107,8 +100,7 @@ class RedirectHandler(BaseHandler):
         """
         Redirects a short URL based on the given url hash.
         """
-        long_url, android_url, android_fallback_url, \
-            ios_url, ios_fallback_url = self.load_urls(str(url_hash))
+        long_url, android_url, android_fallback_url, ios_url, ios_fallback_url = self.load_urls(str(url_hash))
 
         if not long_url:
             raise HTTPError(404)
@@ -158,7 +150,7 @@ class ExpandHandler(BaseHandler):
         if short_url:
             try:
                 url_hash_from_url = utils.get_hash_from_url(short_url)
-            except:
+            except Exception:
                 # TODO: Response differs from bitly
                 return self.finish(
                     {'status_code': 500, 'status_txt': 'INVALID_ARG_SHORTURL', 'data': []})
@@ -169,8 +161,7 @@ class ExpandHandler(BaseHandler):
             else:
                 url_hash = url_hash_from_url
 
-        long_url, android_url, android_fallback_url, \
-            ios_url, ios_fallback_url = self.load_urls(url_hash)
+        long_url, android_url, android_fallback_url, ios_url, ios_fallback_url = self.load_urls(url_hash)
         if not long_url:
             return self.finish({
                 'status_code': 200,
@@ -233,14 +224,14 @@ class ShortHandler(BaseHandler):
             if ios_fallback_url:
                 ios_fallback_url = utils.normalize_url(ios_fallback_url)
                 assert utils.validate_url(ios_fallback_url) is True
-        except:
+        except Exception:
             logging.info('Wrong URL', exc_info=1)
             return self.finish({'status_code': 500, 'status_txt': 'INVALID_URI', 'data': []})
 
         # Validate domain.
         if not utils.validate_url('http://' + domain):
             return self.finish(
-                    {'status_code': 500, 'status_txt': 'INVALID_ARG_DOMAIN', 'data': []})
+                {'status_code': 500, 'status_txt': 'INVALID_ARG_DOMAIN', 'data': []})
 
         # Generate a unique hash, assemble short url and store result in Redis.
         url_hash = utils.generate_hash(self.application.redis,

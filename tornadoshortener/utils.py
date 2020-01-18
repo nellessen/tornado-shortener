@@ -1,30 +1,20 @@
-#!/usr/bin/env python
-# coding=UTF-8
-# Title:       utils
-# Description: Contains utilities.
-# Author       David Nellessen <david.nellessen@familo.net>
-# Date:        4/2/14
-# Note:
-# =============================================================================
-
-# Import modules
 import re
-import urllib
-import urlparse
+import urllib.error
+import urllib.parse
+import urllib.request
+
 import time
-
 from hashids import Hashids
-
 
 # Compile the regular expression for validating URLs.
 url_regex = re.compile(
-        r'^(?:http|ftp)s?://'  # http:// or https://
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+'
-        r'(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
-        r'localhost|'  # localhost...
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
-        r'(?::\d+)?'  # optional port
-        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    r'^(?:http|ftp)s?://'  # http:// or https://
+    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+'
+    r'(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
+    r'localhost|'  # localhost...
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+    r'(?::\d+)?'  # optional port
+    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
 def validate_url(url):
@@ -53,9 +43,9 @@ def normalize_url(url, charset='utf-8'):
 
     :see: http://stackoverflow.com/questions/120951/how-can-i-normalize-a-url-in-python
     """
-    if isinstance(url, unicode):
+    if isinstance(url, str):
         url = url.encode(charset, 'ignore')
-    return urllib.quote(url, safe="%/:=&?~#+!$,;'@()*[]")
+    return urllib.parse.quote(url, safe="%/:=&?~#+!$,;'@()*[]")
 
 
 def generate_hash(redis_connection, redis_namespace=':short', hash_salt=''):
@@ -67,13 +57,13 @@ def generate_hash(redis_connection, redis_namespace=':short', hash_salt=''):
     days_since_epoch = int(time.time() / 86400)
     day_index = redis_connection.incr(redis_namespace + 'HI:' + str(days_since_epoch))
     hashids = Hashids(salt=hash_salt)
-    return hashids.encrypt(days_since_epoch, day_index)
+    return hashids.encode(days_since_epoch, day_index)
 
 
 def get_hash_from_url(short_url):
     """
     Gets the hash from a short URL which is the path without the trailing slash.
     """
-    p = urlparse.urlparse(short_url).path
+    p = urllib.parse.urlparse(short_url).path
     assert p[0:1] == '/'
     return p.replace('/', '')

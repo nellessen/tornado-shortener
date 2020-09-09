@@ -49,8 +49,7 @@ and the corresponding environment variables: [README.parameter.md](README.parame
 
 ### Advanced Setup
 In a real-world scenario you would want to run multiple application process behind a load
-balancer like [nginx](http://nginx.org/). You can find an nginx configuration in *conf/nginx.conf*
-as well as a supervisor configuration in *conf/supervisord.conf*.
+balancer like [nginx](http://nginx.org/).
 
 
 ### Alternative URLs for iOS and Android Devices
